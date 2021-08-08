@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node Crud </title>
+
+    <!--Added css -->
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+        referrerpolicy="no-referrer" />
+
+</head>
+
+<body>
+    <h1>To Do List</h1>
+
+    <form id='mainForm'>
+        <input type='text' name='text' placeholder='Post'>
+        <input class='btn-blue' type='submit'>
+    </form>
+
+
+    <div class="landing" id='landing'>
+
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+    <script>
+
+
+
+        const landing = document.getElementById('landing');
+        const theform = document.getElementById('thisForm');
+        const submitBtn = document.querySelector('input[type=submit]');
+
+
+        // this function can be used multiple times for no refresh 
+        function onloadPage() {
+            fetch('/load')
+                .then(res => res.json())
+                .then((data) => {
+                    let for_landing = '';
+
+                    data.posts.forEach(post => {
+                        for_landing += `
+
+                    <p class='item'> 
+                        <i class="fas fa-check" ></i> 
+                        ${post.comments}
+                        <i class="fas fa-trash-alt" > </i>
+                        <i class="fas fa-pencil-alt" ></i>
+                    </P>
+
+
+                        <div class="backgroundDeleteformModal"> </div> 
+
+                        <form class='deleteFormPopUp' >
+                            <h2>Want to delete ?</h2>
+                                <button class='btn-red' type='submit' id='${post._id}' onclick="deleteButtonFunction(this.id)">Yes</button>
+                                    </form>
+
+
+                
+
+                        <div class="backgroundEditformModal"> </div>
+
+                            <form class='editFormPopUp' >
+                                <textarea  name='nameToEdit'> ${post.comments}</textarea>
+                                <button type='submit' class='btn-blue'  id='${post._id}' onclick='applyChanges(this.id)'>Update Changes</button>
+                                    </form>
+                    
+                    
+                        `;
+                        landing.innerHTML = for_landing;
+                        whenClickCheck()
+                        clickTrash()
+                        clickPencil()
+                    });
+
+
+
+                })
+        }
+
+        onloadPage()
+
+
+
+
+
+
+
+
+
+        submitBtn.addEventListener('click', (e) => {
+
+            e.preventDefault();
+            console.log(theform.text.value);
+
+            let theComment = theform.text.value;
+            let body = { comment: theComment };
+            fetch('/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body)
+            })
+            onloadPage()
+
+        })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        function deleteButtonFunction(grabId) {
+            let deleteFormPopUp = document.querySelectorAll('.deleteFormPopUp')
+
+            for (let i = 0; i < deleteFormPopUp.length; i++) {
+                deleteFormPopUp[i].addEventListener('submit', (e) => {
+                    e.preventDefault()
+                    console.log('delete id ', grabId)
+
+                    let body = { id: grabId };
+                    console.log(body.id);
+                    fetch('/delete', {
+                        method: 'delete',
+                        headers: {
+                            'content-type': 'application/json',
+                        },
+
+                        body: JSON.stringify(body)
+                    })
+                    onloadPage()
+                })
+            }
+
+        }
+
+
+
+
+
+
+        function applyChanges(theId) {
+
+            let editFormPopUp = document.querySelectorAll('.editFormPopUp')
+
+            for (let i = 0; i < editFormPopUp.length; i++) {
+                editFormPopUp[i].addEventListener('submit', (e) => {
+                    e.preventDefault()
+                    console.log('clicked', editFormPopUp[i].nameToEdit.value)
+
+                    let id = theId;
+                    let nameToEdit = editFormPopUp[i].nameToEdit.value;
+
+                    let body = { nameToEdit: nameToEdit, id: theId }
+
+
+                    fetch('/update', {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(body)
+                    })
+
+                    onloadPage()
+
+                })
+            }
+
+        }
+
+
+
+
+
+
+
+
+        function whenClickCheck() {
+            let item = document.querySelectorAll('.item')
+            let checkMark = document.querySelectorAll('.item .fa-check')
+
+            for (let i = 0; i < item.length; i++) {
+                checkMark[i].addEventListener('click', () => {
+                    console.log('add Line')
+                    item[i].classList.toggle('lineThrough')
+                    checkMark[i].classList.toggle('colorCheckmark')
+                })
+            }
+        }
+
+
+
+
+
+        function clickTrash() {
+            const backgroundDeleteformModal = document.querySelectorAll('.backgroundDeleteformModal');
+            const popUpFormDelete = document.querySelectorAll('.deleteFormPopUp');
+            const trashcan = document.querySelectorAll('.fa-trash-alt');
+
+            for (let i = 0; i < trashcan.length; i++) {
+                trashcan[i].addEventListener('click', () => {
+                    console.log('clicked trash')
+                    popUpFormDelete[i].classList.toggle('activatPopupForm')
+                    backgroundDeleteformModal[i].classList.toggle('activatPopupForm')
+
+                })
+
+                backgroundDeleteformModal[i].addEventListener('click', () => {
+                    popUpFormDelete[i].classList.toggle('activatPopupForm')
+                    backgroundDeleteformModal[i].classList.toggle('activatPopupForm')
+                })
+
+            }
+        }
+
+
+
+
+        function clickPencil() {
+            const popUpForm = document.querySelectorAll('.editFormPopUp');
+            const backgroundEditformModal = document.querySelectorAll('.backgroundEditformModal');
+            const pencils = document.querySelectorAll('.fa-pencil-alt');
+            const textarea = document.querySelectorAll('.editFormPopUp textarea');
+
+
+            for (let i = 0; i < pencils.length; i++) {
+                pencils[i].addEventListener('click', () => {
+                    console.log('clicked Pencil')
+                    popUpForm[i].classList.toggle('activatPopupForm')
+                    backgroundEditformModal[i].classList.toggle('activatPopupForm')
+                    textarea[i].focus()
+
+                })
+
+                backgroundEditformModal[i].addEventListener('click', () => {
+                    popUpForm[i].classList.toggle('activatPopupForm')
+                    backgroundEditformModal[i].classList.toggle('activatPopupForm')
+                })
+
+            }
+        }
+
+
+
+
+
+    </script>
+</body>
+
+</html>
