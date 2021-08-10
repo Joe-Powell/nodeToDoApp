@@ -43,7 +43,7 @@
 
 
         const landing = document.getElementById('landing');
-        const theform = document.getElementById('thisForm');
+        const mainForm = document.getElementById('mainForm');
         const submitBtn = document.querySelector('input[type=submit]');
 
 
@@ -108,9 +108,9 @@
         submitBtn.addEventListener('click', (e) => {
 
             e.preventDefault();
-            console.log(theform.text.value);
+            console.log(mainForm.text.value);
 
-            let theComment = theform.text.value;
+            let theComment = mainForm.text.value;
             let body = { comment: theComment };
             fetch('/submit', {
                 method: 'POST',
